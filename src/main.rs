@@ -4,9 +4,9 @@ use std::{array, collections::HashSet, fmt::Display};
 
 fn main() -> anyhow::Result<()> {
     let input = "123456789578139624496872153952381467641297835387564291719623548864915372235748916";
-    // let board = Sudoku::try_from(input)?;
+    let board = Sudoku::try_from(input)?;
 
-    // println!("{}", board);
+    println!("{}", board);
 
     Ok(())
 }
@@ -17,6 +17,8 @@ pub enum SudokuError {
     CellNotFound { row: usize, col: usize },
     #[error("cell value must be between 1 and 9 (was {0})")]
     CellValue(u8),
+    #[error("input length must have 81 characters (was {0})")]
+    InputLength(usize),
 }
 
 #[derive(Debug)]
@@ -78,6 +80,35 @@ impl Sudoku {
             Cell::Empty => false,
             Cell::Value(num) => set.insert(num),
         })
+    }
+}
+
+impl TryFrom<&str> for Sudoku {
+    type Error = SudokuError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if value.len() != 81 {
+            return Err(SudokuError::InputLength(value.len()));
+        }
+
+        let mut board: [[Cell; 9]; 9] = array::from_fn(|_| array::from_fn(|_| Cell::Empty));
+
+        value
+            .as_bytes()
+            .chunks(9)
+            .map(std::str::from_utf8)
+            .map(|row| -> [Cell; 9] {
+                row.unwrap()
+                    .chars()
+                    .map(|c| Cell::try_from(c.to_digit(10).unwrap() as u8).unwrap())
+                    .collect::<Vec<Cell>>()
+                    .try_into()
+                    .unwrap()
+            })
+            .enumerate()
+            .for_each(|(i, row)| board[i] = row);
+
+        Ok(Self(board))
     }
 }
 
