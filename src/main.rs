@@ -104,16 +104,16 @@ mod tests {
     #[test]
     fn row_completed() {
         let mut sudoku = Sudoku::new();
-        sudoku.set_cell(0, 0, 1).unwrap();
-        sudoku.set_cell(0, 1, 2).unwrap();
-        sudoku.set_cell(0, 2, 3).unwrap();
-        sudoku.set_cell(0, 3, 4).unwrap();
-        sudoku.set_cell(0, 4, 5).unwrap();
-        sudoku.set_cell(0, 5, 6).unwrap();
-        sudoku.set_cell(0, 6, 7).unwrap();
-        sudoku.set_cell(0, 7, 8).unwrap();
-        sudoku.set_cell(0, 8, 9).unwrap();
-        assert!(sudoku.is_row_completed(0))
+        sudoku.set_cell(2, 0, 1).unwrap();
+        sudoku.set_cell(2, 1, 2).unwrap();
+        sudoku.set_cell(2, 2, 3).unwrap();
+        sudoku.set_cell(2, 3, 4).unwrap();
+        sudoku.set_cell(2, 4, 5).unwrap();
+        sudoku.set_cell(2, 5, 6).unwrap();
+        sudoku.set_cell(2, 6, 7).unwrap();
+        sudoku.set_cell(2, 7, 8).unwrap();
+        sudoku.set_cell(2, 8, 9).unwrap();
+        assert!(sudoku.is_row_completed(2))
     }
 
     #[test]
@@ -136,16 +136,16 @@ mod tests {
     #[test]
     fn column_completed() {
         let mut sudoku = Sudoku::new();
-        sudoku.set_cell(0, 0, 1).unwrap();
-        sudoku.set_cell(1, 0, 2).unwrap();
-        sudoku.set_cell(2, 0, 3).unwrap();
-        sudoku.set_cell(3, 0, 4).unwrap();
-        sudoku.set_cell(4, 0, 5).unwrap();
-        sudoku.set_cell(5, 0, 6).unwrap();
-        sudoku.set_cell(6, 0, 7).unwrap();
-        sudoku.set_cell(7, 0, 8).unwrap();
-        sudoku.set_cell(8, 0, 9).unwrap();
-        assert!(sudoku.is_column_completed(0))
+        sudoku.set_cell(0, 1, 1).unwrap();
+        sudoku.set_cell(1, 1, 2).unwrap();
+        sudoku.set_cell(2, 1, 3).unwrap();
+        sudoku.set_cell(3, 1, 4).unwrap();
+        sudoku.set_cell(4, 1, 5).unwrap();
+        sudoku.set_cell(5, 1, 6).unwrap();
+        sudoku.set_cell(6, 1, 7).unwrap();
+        sudoku.set_cell(7, 1, 8).unwrap();
+        sudoku.set_cell(8, 1, 9).unwrap();
+        assert!(sudoku.is_column_completed(1))
     }
 
     #[test]
