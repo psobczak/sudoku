@@ -1,17 +1,12 @@
-use std::{array, fmt::Display};
+#![feature(iter_array_chunks)]
+
+use std::{array, collections::HashSet, fmt::Display};
 
 fn main() -> anyhow::Result<()> {
-    let mut board = Board::<9>::new();
-    board.set_cell(0, 0, 9)?;
-    board.set_cell(0, 1, 9)?;
-    board.set_cell(0, 2, 9)?;
-    board.set_cell(1, 0, 9)?;
-    board.set_cell(1, 1, 9)?;
-    board.set_cell(1, 2, 9)?;
-    board.set_cell(2, 0, 1)?;
-    board.set_cell(2, 1, 1)?;
-    board.set_cell(2, 2, 1)?;
-    println!("{}", board);
+    let input = "123456789578139624496872153952381467641297835387564291719623548864915372235748916";
+    // let board = Sudoku::try_from(input)?;
+
+    // println!("{}", board);
 
     Ok(())
 }
@@ -25,9 +20,9 @@ pub enum SudokuError {
 }
 
 #[derive(Debug)]
-pub struct Board<const SIZE: usize>([[Cell; SIZE]; SIZE]);
+pub struct Sudoku([[Cell; 9]; 9]);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cell {
     Empty,
     Value(u8),
@@ -45,13 +40,15 @@ impl TryFrom<u8> for Cell {
     }
 }
 
-impl<const SIZE: usize> Board<SIZE> {
-    fn new() -> Self {
+impl Default for Sudoku {
+    fn default() -> Self {
         Self(array::from_fn(|_| array::from_fn(|_| Cell::Empty)))
     }
+}
 
-    fn get_cell(&self, row: usize, col: usize) -> Option<&Cell> {
-        self.0.get(row).and_then(|row| row.get(col))
+impl Sudoku {
+    fn new() -> Self {
+        Self::default()
     }
 
     fn get_cell_mut(&mut self, row: usize, col: usize) -> Option<&mut Cell> {
@@ -66,9 +63,25 @@ impl<const SIZE: usize> Board<SIZE> {
             })
             .ok_or_else(|| SudokuError::CellValue(number))
     }
+
+    fn is_row_completed(&self, row: usize) -> bool {
+        let mut set = HashSet::new();
+        self.0[row].iter().all(|cell: &Cell| match cell {
+            Cell::Empty => false,
+            Cell::Value(num) => set.insert(num),
+        })
+    }
+
+    fn is_column_completed(&self, col: usize) -> bool {
+        let mut set = HashSet::new();
+        self.0.iter().map(|row| row[col]).all(|cell| match cell {
+            Cell::Empty => false,
+            Cell::Value(num) => set.insert(num),
+        })
+    }
 }
 
-impl<const SIZE: usize> Display for Board<SIZE> {
+impl Display for Sudoku {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.0 {
             for cell in row {
@@ -81,5 +94,74 @@ impl<const SIZE: usize> Display for Board<SIZE> {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn row_completed() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+        sudoku.set_cell(0, 1, 2).unwrap();
+        sudoku.set_cell(0, 2, 3).unwrap();
+        sudoku.set_cell(0, 3, 4).unwrap();
+        sudoku.set_cell(0, 4, 5).unwrap();
+        sudoku.set_cell(0, 5, 6).unwrap();
+        sudoku.set_cell(0, 6, 7).unwrap();
+        sudoku.set_cell(0, 7, 8).unwrap();
+        sudoku.set_cell(0, 8, 9).unwrap();
+        assert!(sudoku.is_row_completed(0))
+    }
+
+    #[test]
+    fn row_contains_empty_cell() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+
+        assert!(!sudoku.is_row_completed(0))
+    }
+
+    #[test]
+    fn row_contains_duplicates() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+        sudoku.set_cell(0, 1, 1).unwrap();
+
+        assert!(!sudoku.is_row_completed(0))
+    }
+
+    #[test]
+    fn column_completed() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+        sudoku.set_cell(1, 0, 2).unwrap();
+        sudoku.set_cell(2, 0, 3).unwrap();
+        sudoku.set_cell(3, 0, 4).unwrap();
+        sudoku.set_cell(4, 0, 5).unwrap();
+        sudoku.set_cell(5, 0, 6).unwrap();
+        sudoku.set_cell(6, 0, 7).unwrap();
+        sudoku.set_cell(7, 0, 8).unwrap();
+        sudoku.set_cell(8, 0, 9).unwrap();
+        assert!(sudoku.is_column_completed(0))
+    }
+
+    #[test]
+    fn column_contains_empty_cell() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+
+        assert!(!sudoku.is_column_completed(0))
+    }
+
+    #[test]
+    fn column_contains_duplicates() {
+        let mut sudoku = Sudoku::new();
+        sudoku.set_cell(0, 0, 1).unwrap();
+        sudoku.set_cell(1, 0, 1).unwrap();
+
+        assert!(!sudoku.is_row_completed(0))
     }
 }
