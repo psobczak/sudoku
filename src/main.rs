@@ -81,6 +81,14 @@ impl Sudoku {
             Cell::Value(num) => set.insert(num),
         })
     }
+
+    fn all_rows_completed(&self) -> bool {
+        (0..9).all(|row| self.is_row_completed(row))
+    }
+
+    fn all_columns_completed(&self) -> bool {
+        (0..9).all(|column| self.is_column_completed(column))
+    }
 }
 
 impl TryFrom<&str> for Sudoku {
@@ -194,5 +202,27 @@ mod tests {
         sudoku.set_cell(1, 0, 1).unwrap();
 
         assert!(!sudoku.is_row_completed(0))
+    }
+
+    #[test]
+    fn all_rows_and_columns_completed() {
+        let input =
+            "123456789578139624496872153952381467641297835387564291719623548864915372235748916";
+        let board = Sudoku::try_from(input).unwrap();
+
+        assert!(board.all_rows_completed());
+        assert!(board.all_columns_completed());
+    }
+
+    #[test]
+    fn row_not_completed() {
+        let input =
+            "123456789578139624496872153952381467641297835387564291719623548864915372235748916";
+        let mut board = Sudoku::try_from(input).unwrap();
+
+        board.set_cell(1, 1, 1).unwrap();
+        board.set_cell(1, 2, 1).unwrap();
+
+        assert!(!board.all_rows_completed());
     }
 }
