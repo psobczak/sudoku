@@ -2,8 +2,8 @@ use std::{array, collections::HashSet, fmt::Display};
 
 #[derive(Debug, thiserror::Error)]
 pub enum SudokuError {
-    #[error("cell value must be between 1 and 9 (was {0})")]
-    CellValue(u8),
+    #[error("value must be between 1 and 9 (was {0})")]
+    Value(u8),
     #[error("input length must have 81 characters (was {0})")]
     InputLength(usize),
 }
@@ -43,19 +43,21 @@ pub enum Column {
     Nine,
 }
 
-impl From<usize> for Row {
-    fn from(value: usize) -> Self {
+impl TryFrom<usize> for Row {
+    type Error = SudokuError;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
         match value {
-            0 => Row::A,
-            1 => Row::B,
-            2 => Row::C,
-            3 => Row::D,
-            4 => Row::E,
-            5 => Row::F,
-            6 => Row::G,
-            7 => Row::H,
-            8 => Row::I,
-            _ => todo!(),
+            0 => Ok(Row::A),
+            1 => Ok(Row::B),
+            2 => Ok(Row::C),
+            3 => Ok(Row::D),
+            4 => Ok(Row::E),
+            5 => Ok(Row::F),
+            6 => Ok(Row::G),
+            7 => Ok(Row::H),
+            8 => Ok(Row::I),
+            _ => Err(SudokuError::Value(value as u8)),
         }
     }
 }
@@ -76,19 +78,21 @@ impl From<Row> for usize {
     }
 }
 
-impl From<usize> for Column {
-    fn from(value: usize) -> Self {
+impl TryFrom<usize> for Column {
+    type Error = SudokuError;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
         match value {
-            0 => Column::One,
-            1 => Column::Two,
-            2 => Column::Three,
-            3 => Column::Four,
-            4 => Column::Five,
-            5 => Column::Six,
-            6 => Column::Seven,
-            7 => Column::Eight,
-            8 => Column::Nine,
-            _ => todo!(),
+            0 => Ok(Column::One),
+            1 => Ok(Column::Two),
+            2 => Ok(Column::Three),
+            3 => Ok(Column::Four),
+            4 => Ok(Column::Five),
+            5 => Ok(Column::Six),
+            6 => Ok(Column::Seven),
+            7 => Ok(Column::Eight),
+            8 => Ok(Column::Nine),
+            _ => Err(SudokuError::Value(value as u8)),
         }
     }
 }
@@ -116,7 +120,7 @@ impl TryFrom<u8> for Cell {
         match value {
             0 => Ok(Cell::Empty),
             x if (1..=9).contains(&x) => Ok(Cell::Value(x)),
-            _ => Err(SudokuError::CellValue(value)),
+            _ => Err(SudokuError::Value(value)),
         }
     }
 }
@@ -144,7 +148,7 @@ impl Board {
                 *c = Cell::try_from(number).unwrap();
                 Some(())
             })
-            .ok_or_else(|| SudokuError::CellValue(number))
+            .ok_or_else(|| SudokuError::Value(number))
     }
 
     pub fn is_row_completed(&self, row: Row) -> bool {
@@ -166,11 +170,11 @@ impl Board {
     }
 
     pub fn all_rows_completed(&self) -> bool {
-        (0..9).all(|row: usize| self.is_row_completed(row.into()))
+        (0..9).all(|row: usize| self.is_row_completed(row.try_into().unwrap()))
     }
 
     pub fn all_columns_completed(&self) -> bool {
-        (0..9).all(|column: usize| self.is_column_completed(column.into()))
+        (0..9).all(|column: usize| self.is_column_completed(column.try_into().unwrap()))
     }
 
     pub fn get_square_of(&self, coordinate: (Row, Column)) -> [Cell; 9] {
